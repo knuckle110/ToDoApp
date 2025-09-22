@@ -20,5 +20,3 @@ OTHER… Freely add tasks here, from bath time to diaper changes. The number of 
 Completed Tasks... Displays tasks you've finished so far. Review them later to boost your self-esteem.
 
 List Mode... While this app's purpose is to focus intensely on just one FP task at a time, you might forget what tasks you've registered. Use this mode for an instant overview.
-
-Translated with DeepL.com (free version)
