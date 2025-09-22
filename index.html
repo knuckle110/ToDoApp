@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TODO (FP / STUCK / OTHER)</title>
+  <meta name="theme-color" content="#22c55e">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml"
+      href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="%2322c55e"/><path d="M4 8.5l2.2 2.2L12 5.9" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#fff; --muted:#6b7280; --primary:#22c55e; --danger:#ef4444;
+      --amber:#f59e0b; --blue:#3b82f6; --border:#e5e7eb; --text:#0f172a;
+    }
+    /* ページ全体を縦Flexにしてフッターを最下部へ */
+    html, body { height: 100%; }
+    body{
+      min-height: 100svh;          /* iOS等でも正確なビューポート高 */
+      display: flex;
+      flex-direction: column;
+    }
+    main { flex: 1 0 auto; }
+    header{position:sticky;top:0;z-index:10;backdrop-filter:saturate(180%) blur(8px);background:rgba(255,255,255,.7);border-bottom:1px solid var(--border)}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    h1{margin:4px 0 0;font-size:20px;font-weight:700}
+    .muted{color:var(--muted);font-size:12px}
+    .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .btn{border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
+    .btn.primary{background:var(--primary);color:#fff;border-color:transparent}
+    .btn.ghost{background:transparent}
+    .btn.danger{background:var(--danger);color:#fff;border-color:transparent}
+    .btn.small{padding:5px 8px;font-size:12px;border-radius:8px}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .stack{display:grid;grid-template-columns:1fr;gap:16px;padding:10px 0}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:-4px 0 12px}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#eafff3;color:#047857;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid #b7f0cd}
+    .pill.warn{background:#fff7ed;color:#92400e;border-color:#fed7aa}
+    .pill.gray{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
+    .table{display:grid;gap:8px}
+    .thead,.row{display:grid;grid-template-columns:3fr 140px 1.2fr 100px 240px;gap:8px;align-items:center}
+    .thead{font-size:12px;color:var(--muted)}
+    .tcell,.rcell{background:#fff;padding:8px 10px;border:1px dashed var(--border);border-radius:10px;min-height:38px;display:flex;align-items:center}
+    .rcell.actions{gap:6px;flex-wrap:wrap}
+    .row-details{grid-column:1/-1;background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:#334155;font-size:13px;display:none}
+    .row-details .kvs{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+    .row-details .kv{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 8px}
+    .fp-card{display:flex;gap:16px;align-items:start}
+    .fp-badge{min-width:64px;text-align:center;background:var(--blue);color:#fff;padding:10px 8px;border-radius:12px;font-weight:700}
+    .fp-content{flex:1}
+    .fp-title{font-size:20px;font-weight:800;margin:0 0 6px}
+    .tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:999px;background:#eef2ff;margin-right:6px}
+    .rowlist{display:flex;flex-direction:column;gap:8px}
+    .view{display:none}.view.active{display:block}
+    label{font-size:12px;color:var(--muted)} input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;font:inherit}
+    textarea{min-height:96px;resize:vertical}
+    .empty{color:var(--muted);font-size:13px;padding:8px 0}
+
+    /* 入力フォーム */
+    .form-grid{display:grid;gap:12px;grid-template-columns:1fr}
+    @media(min-width:860px){.form-grid{grid-template-columns:1fr 1fr}}
+    .form-item{display:flex;flex-direction:column;gap:6px}
+    .form-item.full{grid-column:1/-1}
+    .hint{font-size:11px;color:var(--muted)}
+    .form-actions{display:flex;justify-content:flex-end;gap:8px}
+    .form-actions .btn{min-width:96px}
+
+    /* 完了実績 */
+    .group{margin-top:12px}
+    .group-title{font-weight:700;margin:6px 0 4px;font-size:14px}
+    .task-line{display:flex;gap:8px;align-items:center;font-size:13px}
+    .task-line .time{color:var(--muted);font-variant-numeric:tabular-nums;}
+
+    /* Footer */
+    .site-footer{background:#fff;border-top:1px solid var(--border);color:#374151}
+    .footer-bar{max-width:1100px;margin:0 auto;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .social{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .social a{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:#111827;text-decoration:none;border-radius:8px;border:1px solid transparent;transition:transform .15s ease,border-color .15s ease,background .15s ease}
+    .social a:hover{transform:translateY(-1px)}
+    .legal{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .legal-links{display:flex;gap:16px;flex-wrap:wrap;list-style:none;padding:0;margin:0}
+    .legal-links a{color:#374151;text-decoration:none}
+    .legal-links a:hover{text-decoration:underline}
+    .copyright{color:#6b7280}
+    @media(max-width:520px){.footer-bar{justify-content:center}.legal{justify-content:center}}
+
+    /* Legal modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:50}
+    .modal{position:fixed;inset:0;display:none;z-index:51;overflow:auto}
+    .modal .panel{max-width:860px;margin:6vh auto 10vh;background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+    .modal h2{margin:0 0 8px;font-size:20px}
+    .modal .meta{color:var(--muted);font-size:12px;margin-bottom:12px}
+    .modal .content{font-size:14px;line-height:1.8;color:#111}
+    .modal .content h3{margin:18px 0 6px;font-size:16px}
+    .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+    .modal .actions .btn.small{min-width:88px}
+    .modal.show,.modal-backdrop.show{display:block}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>注意散漫なやつのためのToDoリスト</h1>
+      <div class="bar">
+        <button id="showList" class="btn primary">リストを見る</button>
+        <button id="showForm" class="btn">入力 / 編集する</button>
+        <button id="toggleHistory" class="btn ghost">完了実績</button>
+        <button id="listModeBtn" class="btn ghost">一覧モード</button>
+        <span style="flex:1"></span>
+      </div>
+      <span class="muted" id="flavorText" style="text-align:right"></span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ① リスト画面 -->
+    <section id="view-list" class="view active">
+      <section class="card">
+        <div class="section-title"><div><span class="pill">FP(最優先1件)</span></div></div>
+        <div id="fpBox" class="rowlist"></div>
+      </section>
+
+      <div class="stack">
+        <section class="card">
+          <div class="section-title">
+            <div><span class="pill warn">STUCK（最大5件）</span></div>
+            <button class="btn small ghost" id="toggleStuck">開く</button>
+          </div>
+          <div class="table" id="stuckTable" style="display:none">
+            <div class="thead">
+              <div class="tcell">タイトル</div><div class="tcell">期日</div><div class="tcell">プロジェクト</div>
+              <div class="tcell">優先度</div><div class="tcell">操作</div>
+            </div>
+            <div id="stuckBody"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-title">
+            <div><span class="pill gray">OTHER</span></div>
+            <button class="btn small ghost" id="toggleOther">開く</button>
+          </div>
+          <div class="table" id="otherTable" style="display:none">
+            <div class="thead">
+              <div class="tcell">タイトル</div><div class="tcell">期日</div><div class="tcell">プロジェクト</div>
+              <div class="tcell">優先度</div><div class="tcell">操作</div>
+            </div>
+            <div id="otherBody"></div>
+          </div>
+        </section>
+
+        <section class="card" id="historyCard" style="display:none">
+          <div class="section-title"><div><span class="pill">完了実績</span></div><div class="muted" id="praise"></div></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <span class="pill">今日 <span id="statToday">0</span></span>
+            <span class="pill">今週 <span id="statWeek">0</span></span>
+            <span class="pill">今月 <span id="statMonth">0</span></span>
+            <span class="pill">累計 <span id="statAll">0</span></span>
+          </div>
+          <div class="bar" style="margin-top:12px">
+            <div class="muted">表示:</div>
+            <label class="muted"><input type="radio" name="histGroup" value="day" checked> 日別</label>
+            <label class="muted"><input type="radio" name="histGroup" value="week"> 週別</label>
+            <label class="muted"><input type="radio" name="histGroup" value="month"> 月別</label>
+            <span style="flex:1"></span>
+            <button id="histCsvBtn" class="btn small ghost">この表示をCSV</button>
+          </div>
+          <div style="margin-top:10px" id="doneList"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ② 入力/編集画面 -->
+    <section id="view-form" class="view">
+      <section class="card">
+        <h2 style="margin:0 0 6px">タスク入力 / 編集</h2>
+        <form id="todoForm" class="form-grid" autocomplete="on">
+          <input type="hidden" id="todoId">
+          <div class="form-item full">
+            <label for="title">タイトル <span class="hint">（必須）</span></label>
+            <input id="title" required placeholder="例：請求締めの自動化スクリプト修正">
+          </div>
+          <div class="form-item"><label for="project">プロジェクト</label><input id="project" placeholder="例：製造計画アプリ"></div>
+          <div class="form-item"><label for="tags">タグ（カンマ区切り）</label><input id="tags" placeholder="例：urgent,backend"></div>
+          <div class="form-item"><label for="due">期日</label><input id="due" type="date"></div>
+          <div class="form-item">
+            <label for="priority">優先度</label>
+            <select id="priority"><option value="1">高</option><option value="2" selected>中</option><option value="3">低</option></select>
+          </div>
+          <div class="form-item">
+            <label for="bucket">区分（入力時は STUCK / OTHER）</label>
+            <select id="bucket"><option value="stuck">STUCK</option><option value="other">OTHER</option></select>
+          </div>
+          <div class="form-item full"><label for="notes">詳細</label><textarea id="notes" placeholder="手順・補足・URLなど"></textarea></div>
+          <div class="form-actions full">
+            <button type="reset" class="btn small ghost">リセット</button>
+            <button class="btn small primary" type="submit">保存</button>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-bar">
+      <nav class="social" aria-label="このページを共有">
+        <a id="shareX" aria-label="Xで共有" target="_blank" rel="noopener" href="#">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </a>
+        <a id="shareFB" aria-label="Facebookで共有" target="_blank" rel="noopener" href="#">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor"/><path d="M13 8h2V6h-2c-1.7 0-3 1.3-3 3v2H8v2h2v5h2v-5h2l1-2h-3V9c0-.6.4-1 1-1z"/></svg>
+        </a>
+        <a id="shareLINE" aria-label="LINEで共有" target="_blank" rel="noopener" href="#">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="7" fill="none" stroke="currentColor"/><path d="M7 12h10M7 9h10M7 15h6"/></svg>
+        </a>
+        <a id="shareLI" aria-label="LinkedInで共有" target="_blank" rel="noopener" href="#">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"/><rect x="6.5" y="10" width="2.5" height="7"/><rect x="6.5" y="6.5" width="2.5" height="2.5"/><path d="M12 10h2.4v1c.5-.7 1.3-1.2 2.4-1.2 2.1 0 3.2 1.4 3.2 3.5V17h-2.5v-3.1c0-1.1-.4-1.9-1.5-1.9-1 0-1.6.7-1.6 2V17H12z"/></svg>
+        </a>
+        <a id="shareCopy" aria-label="URLをコピー" href="#">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="8" y="8" width="10" height="12" rx="2" fill="none" stroke="currentColor"/><rect x="6" y="4" width="10" height="12" rx="2" fill="none" stroke="currentColor"/></svg>
+        </a>
+      </nav>
+      <div class="legal">
+        <ul class="legal-links" aria-label="法務リンク">
+          <li><a href="#" id="termsLink">利用規約</a></li>
+          <li><a href="#" id="privacyLink">プライバシーポリシー</a></li>
+        </ul>
+        <span class="copyright">© <span id="year"></span> 注意散漫なやつのためのToDoリスト</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Legal Modals -->
+  <div id="legalBackdrop" class="modal-backdrop" aria-hidden="true"></div>
+
+  <section id="termsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="termsTitle" aria-hidden="true">
+    <div class="panel">
+      <h2 id="termsTitle">利用規約</h2>
+      <div class="meta">最終更新日：<span id="termsUpdated">2025-09-19</span></div>
+      <div class="content">
+        <p>本利用規約（以下「本規約」）は、「<strong id="appName1">このアプリ</strong>」（以下「本サービス」）の利用条件を定めるものです。</p>
+        <h3>1. 適用</h3><p>本規約は、ユーザーと<strong id="operator1">運営者</strong>との間の本サービスの利用に関わる一切に適用されます。</p>
+        <h3>2. アカウント・データ</h3><p>本サービスは端末内（IndexedDB）にデータを保存します。バックアップはユーザーの責任で行ってください。</p>
+        <h3>3. 禁止事項</h3><ul><li>法令・公序良俗に反する行為</li><li>本サービスの運営を妨害する行為</li><li>リバースエンジニアリング等の解析行為</li></ul>
+        <h3>4. 停止・中断</h3><p>保守・不可抗力等により告知なく停止・中断する場合があります。</p>
+        <h3>5. 免責</h3><p>運営者は、故意または重過失を除き損害について責任を負いません。</p>
+        <h3>6. 知的財産権</h3><p>本サービスに関する権利は運営者または正当な権利者に帰属します。</p>
+        <h3>7. 変更</h3><p>本規約は必要に応じて変更されます。変更後は掲示時に効力を生じます。</p>
+        <h3>8. 準拠法・裁判管轄</h3><p><strong id="law1">日本法</strong>に準拠し、<strong id="court1">運営者所在地の裁判所</strong>を専属管轄とします。</p>
+        <h3>9. 連絡先</h3><p>お問い合わせ：<strong id="contact1">example@example.com</strong></p>
+      </div>
+      <div class="actions"><button class="btn small" data-legal="print-terms">印刷</button><button class="btn small primary" data-legal="close">閉じる</button></div>
+    </div>
+  </section>
+
+  <section id="privacyModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="privacyTitle" aria-hidden="true">
+    <div class="panel">
+      <h2 id="privacyTitle">プライバシーポリシー</h2>
+      <div class="meta">最終更新日：<span id="privacyUpdated">2025-09-19</span></div>
+      <div class="content">
+        <p><strong id="operator2">運営者</strong>は「<strong id="appName2">このアプリ</strong>」における情報の取扱いについて以下のとおり定めます。</p>
+        <h3>1. 収集する情報</h3><p>原則としてクラウド送信は行いません。タスク等は端末内（IndexedDB）に保存されます。</p>
+        <h3>2. 利用目的</h3><ul><li>タスク管理機能の提供・改善</li><li>不具合解析（ユーザー任意提供に限る）</li></ul>
+        <h3>3. 第三者提供</h3><p>法令に基づく場合を除き第三者に提供しません。</p>
+        <h3>4. 外部送信・解析</h3><p>既定で解析ツールは使用しません。導入時は本ポリシーを更新し同意を取得します。</p>
+        <h3>5. セキュリティ</h3><p>OS更新・画面ロック等を推奨します。</p>
+        <h3>6. 利用者の権利</h3><p>端末内データは閲覧・編集・削除・CSV出力が可能です。</p>
+        <h3>7. 保存期間</h3><p>期間制限は設けません。ユーザー操作により削除できます。</p>
+        <h3>8. 改定</h3><p>改定後は本サービス上で公表し効力を生じます。</p>
+        <h3>9. 連絡先</h3><p>お問い合わせ：<strong id="contact2">example@example.com</strong></p>
+      </div>
+      <div class="actions"><button class="btn small" data-legal="print-privacy">印刷</button><button class="btn small primary" data-legal="close">閉じる</button></div>
+    </div>
+  </section>
+
+  <script src="main.js"></script>
+</body>
+</html>
